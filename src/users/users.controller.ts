@@ -1,36 +1,36 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Put, Body, Param, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User as UserModel, Prisma } from '@prisma/client';
+import { ApiKeyGuard } from '../auth/api-key.guard';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
+@UseGuards(ApiKeyGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  async createUser(@Body() userData: Prisma.UserCreateInput): Promise<UserModel> {
-    return this.usersService.createUser(userData);
-  }
-
   @Get()
-  async getUsers(): Promise<UserModel[]> {
+  async getAllUsers() {
     return this.usersService.getUsers();
   }
 
   @Get(':id')
-  async getUser(@Param('id') userId: string): Promise<UserModel> {
-    return this.usersService.getUser(Number(userId));
+  async getUserById(@Param('id') id: string) {
+    return this.usersService.getUser(+id);
+  }
+
+  @Post()
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.createUser(createUserDto);
   }
 
   @Put(':id')
-  async updateUser(
-    @Param('id') userId: string,
-    @Body() userData: Prisma.UserUpdateInput,
-  ): Promise<UserModel> {
-    return this.usersService.updateUser(Number(userId), userData);
+  async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.updateUser(+id, updateUserDto);
   }
 
   @Delete(':id')
-  async deleteUser(@Param('id') userId: string): Promise<UserModel> {
-    return this.usersService.deleteUser(Number(userId));
+  async deleteUser(@Param('id') id: string) {
+    return this.usersService.deleteUser(+id);
   }
 }

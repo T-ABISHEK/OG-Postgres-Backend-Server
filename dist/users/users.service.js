@@ -16,75 +16,47 @@ let UsersService = class UsersService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async createUser(data) {
-        try {
-            return this.prisma.user.create({
-                data: {
-                    ...data,
-                },
-            });
-        }
-        catch (error) {
-            throw new common_1.HttpException('Error creating user', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
     async getUsers() {
-        try {
-            return this.prisma.user.findMany();
-        }
-        catch (error) {
-            throw new common_1.HttpException('Error retrieving users', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return this.prisma.user.findMany();
     }
     async getUser(userId) {
-        try {
-            const user = await this.prisma.user.findUnique({ where: { userId } });
-            if (!user) {
-                throw new common_1.NotFoundException(`User with ID ${userId} not found`);
-            }
-            return user;
+        const user = await this.prisma.user.findUnique({ where: { userId } });
+        if (!user) {
+            throw new common_1.NotFoundException(`User with ID ${userId} not found`);
         }
-        catch (error) {
-            if (error instanceof common_1.NotFoundException) {
-                throw error;
-            }
-            throw new common_1.HttpException('Error retrieving user', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        return user;
+    }
+    async createUser(data) {
+        const existingUser = await this.prisma.user.findUnique({
+            where: { phoneNumber: data.phoneNumber },
+        });
+        if (existingUser) {
+            throw new common_1.ConflictException('User with this phone number already exists');
         }
+        return this.prisma.user.create({
+            data: {
+                ...data,
+            },
+        });
     }
     async updateUser(userId, data) {
-        try {
-            const user = await this.prisma.user.findUnique({ where: { userId } });
-            if (!user) {
-                throw new common_1.NotFoundException(`User with ID ${userId} not found`);
-            }
-            return this.prisma.user.update({
-                where: { userId },
-                data: {
-                    ...data,
-                },
-            });
+        const user = await this.prisma.user.findUnique({ where: { userId } });
+        if (!user) {
+            throw new common_1.NotFoundException(`User with ID ${userId} not found`);
         }
-        catch (error) {
-            if (error instanceof common_1.NotFoundException) {
-                throw error;
-            }
-            throw new common_1.HttpException('Error updating user', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return this.prisma.user.update({
+            where: { userId },
+            data: {
+                ...data,
+            },
+        });
     }
     async deleteUser(userId) {
-        try {
-            const user = await this.prisma.user.findUnique({ where: { userId } });
-            if (!user) {
-                throw new common_1.NotFoundException(`User with ID ${userId} not found`);
-            }
-            return this.prisma.user.delete({ where: { userId } });
+        const user = await this.prisma.user.findUnique({ where: { userId } });
+        if (!user) {
+            throw new common_1.NotFoundException(`User with ID ${userId} not found`);
         }
-        catch (error) {
-            if (error instanceof common_1.NotFoundException) {
-                throw error;
-            }
-            throw new common_1.HttpException('Error deleting user', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return this.prisma.user.delete({ where: { userId } });
     }
 };
 exports.UsersService = UsersService;

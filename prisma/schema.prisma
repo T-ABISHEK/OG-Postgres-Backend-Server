@@ -11,12 +11,11 @@ model User {
   userId      Int      @id @default(autoincrement())
   phoneNumber String   @unique
   name        String
-  points      Int      @default(0) 
-  wallet      Float    @default(0.0) 
-  age         Int      @default(0) 
   city        String?
   emailId     String   @unique
   state       String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt  
+  updatedAt   DateTime @updatedAt
+  points      Int      @default(0)
+  wallet      Float    @default(0.0)
 }
